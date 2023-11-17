@@ -1,8 +1,9 @@
 <template>
   <el-drawer
-    :direction="direction"
     class="search-nav"
+    append-to-body
     :modal="false"
+    :direction="direction"
     :with-header="false"
     :model-value="visible"
     :before-close="handleClose"
@@ -16,6 +17,7 @@
     </section>
     <section class="route-container">
       <div
+        v-if="filterRouters.length > 0"
         class="route-group"
         v-for="route in filterRouters"
         :key="route.path"
@@ -28,17 +30,18 @@
             :key="item.path"
             :class="item.name === $route.name ? 'active' : ''"
           >
-            <h4 class="route-item-title">{{ item.meta?.alias }}</h4>
+            <h4 class="route-item-title" @click="() => handleRouteItemClick(item.name)">{{ item.meta?.alias }}</h4>
           </div>
         </section>
       </div>
+      <el-empty v-else></el-empty>
     </section>
   </el-drawer>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { cloneDeep } from 'lodash'
 import usePermissionStore from '@/store/module/permission'
 
@@ -55,26 +58,37 @@ const $route = useRoute()
 const permissionStore = usePermissionStore()
 
 const search = ref('')
-const filterRouters = cloneDeep(permissionStore.addRoutes)
+const addRoutes = cloneDeep(permissionStore.addRoutes)
+const filterRouters = ref(addRoutes)
+const isIncludes = (target: string, value: string): boolean => {
+  return target.includes(value)
+}
 const handleSearch = () => {
   const searchValue = search.value
   if (!searchValue) {
-    cloneDeep(permissionStore.addRoutes).forEach((item, index) => {
-      filterRouters[index] = item
+    addRoutes.forEach((item, index) => {
+      filterRouters.value[index] = item
     })
   } else {
-    filterRouters.forEach((item) => {
-      const alias = item.meta?.alias
-      if (alias?.includes(searchValue)) return item
+    filterRouters.value = addRoutes.filter((item) => {
+      const alias = item.meta?.alias || ''
+      if (isIncludes(alias, searchValue)) return item
 
-      const children = item.children || []
-      item.children = children.filter(child => {
-        const alias = child.meta?.alias
-        return alias?.includes(searchValue)
+      const children = (item.children || []).filter(child => {
+        const alias = child.meta?.alias || ''
+        return isIncludes(alias, searchValue)
       })
+
+      if (children.length) return item
     })
   }
 
+}
+
+const $router = useRouter()
+const handleRouteItemClick = (name: string) => {
+  $router.push({ name })
+  handleClose()
 }
 
 
@@ -97,7 +111,7 @@ const handleClose = () => {
   top: 42px!important;
 }
 .el-drawer.search-nav {
-  min-height: 65%;
+  min-height: 385px;
   min-width: 65%;
   background-color: #2f4867;
 
@@ -115,6 +129,7 @@ const handleClose = () => {
 
   .route-container {
     display: flex;
+    justify-content: center;
     margin-top: 20px;
     color: #ffffff;
 
@@ -154,6 +169,7 @@ const handleClose = () => {
             font-size: 14px;
             font-weight: 400;
             box-sizing: border-box;
+            cursor: pointer;
 
             &:hover {
               border-color: #00a4ff;
@@ -163,5 +179,8 @@ const handleClose = () => {
       }
     }
   }
+}
+*:has(.search-nav) {
+  position: absolute!important;
 }
 </style>

@@ -3,15 +3,15 @@
     <el-row>
       <el-col :span="12">
         <el-row>
-          <el-col :span="24">
+          <el-col :span="24" style="height: 50%;">
             <ChartOne/>
           </el-col>
-          <el-col :span="24">
+          <el-col :span="24" style="height: 50%;">
             <ChartTwo/>
           </el-col>
         </el-row>
       </el-col>
-      <el-col :span="12">
+      <el-col :span="12" style="height: 100%;">
         <ChartThree/>
       </el-col>
     </el-row>

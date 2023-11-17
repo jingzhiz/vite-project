@@ -30,10 +30,10 @@
       </div>
       <el-divider direction="vertical"></el-divider>
       <el-dropdown>
-        <div class="link">
-          <img class="avatar" :src="userStore.user.avatar" alt="avatar" />
+        <span class="link">
           <span class="username">{{ userStore.user.name }}</span>
-        </div>
+          <img class="avatar" :src="userStore.user.avatar" alt="avatar" />
+        </span>
         <template #dropdown>
           <el-dropdown-item @click="logout">
             <el-icon><Warning /></el-icon>
@@ -157,8 +157,11 @@ const logout = async () => {
       }
   
       .username {
-        padding-left: 12px;
+        padding: 0px 8px;
         color: v-bind(color);
+        word-spacing: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
     }
   }
